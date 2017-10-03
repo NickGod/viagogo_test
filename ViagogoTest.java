@@ -49,7 +49,9 @@ class Event {
   }
 
   public double getCheapestTicketPrice() {
-    return m_tickets.get(0).getPrice();
+    if (m_tickets.size() > 0)
+      return m_tickets.get(0).getPrice();
+    return 999999.0;
   }
 
   public Point getLocation() {
@@ -60,6 +62,10 @@ class Event {
     return uid;
   }
 
+  public int getTicketNumber() {
+    return m_tickets.size();
+  }
+
   private int uid;
   private ArrayList<Ticket> m_tickets;
   private Point m_location;
@@ -68,10 +74,20 @@ class Event {
 public class ViagogoTest {
 
   private static ArrayList<Event> m_events = new ArrayList<Event>();
+  private static int[][] visited = new int[20][20];
+
+  private static boolean checkUniquePoint(int x, int y) {
+    if (visited[x+10][y+10] != 0) {
+      return false;
+    } else {
+      return true;
+    }
+  }
 
   /*** fill m_events with random events ***/
   private static void generateSeedData() {
     //randomly generate 20 events
+    System.out.println("Generating Events");
     for (int i = 0; i < 20; i++) {
       //generate random number of tickets first
       ArrayList<Ticket> temp_tickets = new ArrayList<Ticket>();
@@ -84,8 +100,14 @@ public class ViagogoTest {
       }
       int random_x = -10 + rand.nextInt(20);
       int random_y = -10 + rand.nextInt(20);
-      Point eventLocation = new Point(random_x, random_y);
 
+      while (!checkUniquePoint(random_x, random_y)) {
+        random_x = -10 + rand.nextInt(20);
+        random_y = -10 + rand.nextInt(20);
+      }
+
+      Point eventLocation = new Point(random_x, random_y);
+      visited[random_x+10][random_y+10] = 1;
       Event new_event = new Event(i, temp_tickets, eventLocation);
       System.out.println(new_event.toString());
       m_events.add(new_event);
@@ -109,8 +131,21 @@ public class ViagogoTest {
 
     String entry = sc.next();
     String[] coordinates = entry.split(",");
-    Point userLocation = new Point(Integer.parseInt(coordinates[0]), Integer.parseInt(coordinates[1]));
-    System.out.printf("User location is at: %d, %d\n", userLocation.x, userLocation.y);
+
+    // validate input
+    if (coordinates.length != 2) {
+      System.out.println("Please Enter input with format x,y");
+      return;
+    }
+
+    int user_x = Integer.parseInt(coordinates[0]);
+    int user_y = Integer.parseInt(coordinates[1]);
+
+    if (user_x < -10 || user_x > 10 || user_y < -10 || user_y > 10) {
+      System.out.println("User should be within -10 to +10 in both X and Y coordinates");
+      return;
+    }
+    Point userLocation = new Point(user_x, user_y);
 
     //trying to find top five closest events
 
@@ -127,10 +162,18 @@ public class ViagogoTest {
     //print the smallest 5 with their cheapest ticket price
     System.out.println("Closest events to " + userLocation.toString() + ": ");
     int result_length = close_events.size() > 5 ? 5 : close_events.size();
-    for (int i = 0; i < result_length; i++) {
+    int count = 0;
+    for (int i = 0; i < close_events.size(); i++) {
       Event e = close_events.get(i);
-      System.out.printf("Event %d - $%.2f, Distance %d\n", e.getId(), e.getCheapestTicketPrice(), 
-        calculateDistance(userLocation, e.getLocation()));
+      if (e.getTicketNumber() > 0) {
+        count++;
+        System.out.printf("Event %03d - $%05.2f, Distance %d\n", e.getId(), e.getCheapestTicketPrice(), 
+          calculateDistance(userLocation, e.getLocation()));
+
+        if (count == 5) {
+          break;
+        }
+      }
     }
 
     return;
