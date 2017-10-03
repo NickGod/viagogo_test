@@ -8,8 +8,6 @@ To compile the program, run:
 To run the program, run:
 `java ViagogoTest`
 
-## Note
-Output 
 ## Assumptions
 - Event with 0 tickets will be filtered out since there will be no lowest ticket price
 - Ticket always has positive price
