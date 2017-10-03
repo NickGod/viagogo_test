@@ -1,4 +1,4 @@
-### Viagogo Programming Test
+# Viagogo Programming Test
 
 ## Instructions
 
